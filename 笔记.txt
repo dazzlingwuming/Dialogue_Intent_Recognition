@@ -1,0 +1,25 @@
+"""
+对话意图识别项目
+"""
+
+1.找到数据集，并且找到所有的意图类别
+    -a. 提取具体有那些意图类别
+        -域的数量：29，意图的数量：24
+            域的种类：['app', 'bus', 'cinemas', 'contacts', 'cookbook', 'email', 'epg', 'flight', 'health', 'joke', 'lottery', 'map', 'match', 'message', 'music', 'news', 'novel', 'poetry', 'radio', 'riddle', 'stock', 'story', 'telephone', 'train', 'translation', 'tvchannel', 'video', 'weather', 'website']
+            意图的种类：[nan, 'REPLAY_ALL', 'DOWNLOAD', 'TRANSLATION', 'PLAY', 'RISERATE_QUERY', 'ROUTE', 'LAUNCH', 'POSITION', 'SENDCONTACTS', 'NUMBER_QUERY', 'SEARCH', 'VIEW', 'DATE_QUERY', 'REPLY', 'CLOSEPRICE_QUERY', 'DEFAULT', 'OPEN', 'CREATE', 'SEND', 'LOOK_BACK', 'DIAL', 'FORWARD', 'QUERY']
+
+    -b. 借鉴TORCHTEXT的做法，简化一下数据加载相关代码：
+        -b1. 安装TORCHTEXT
+        -b2. 学习TORCHTEXT的使用方法
+    -c token处理，词典处理
+        -c1. 词典的构建
+            -c1a. 词典的构建：特殊词处理（unk，pad，bos，eos）
+            1. unk：未知词，词典中没有的词
+            2. pad：填充符，句子长度不够时，用pad填充
+            3. bos：句子开始符
+            4. eos：句子结束符
+            -c1b. 词典的保存与加载
+        -c2. token的处理：词，字，笔画特征选择
+            -c2a. 分词
+            -c2b. 转索引
+            -c2c. padding
