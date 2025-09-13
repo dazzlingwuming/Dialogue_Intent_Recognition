@@ -135,16 +135,20 @@ class MyDataset(Dataset):
         #records: text:List[Tuple[List[str], text_new :List[str], token_ids:[N,M], label:list[str], label_id:[N]，seq_len:[N]]
         #N表示batch_size , M表示句子长度 ，需要对句子进行padding
         #seq_len表示实际上的句子长度
+        seq_len = []
         batch_token = [record[2] for record in records]
         for pad_token in batch_token:
             pad_len = token_len - len(pad_token)
             if pad_len > 0:
+                seq_len.append(len(pad_token))
                 pad_token.extend([self.pad_token_id] * pad_len)
             else:
                 del pad_token[token_len:]
+                seq_len.append(token_len)
         batch_token = torch.tensor(batch_token, dtype=torch.long)
         batch_label = torch.tensor([record[4] for record in records], dtype=torch.long)
-        return batch_token, batch_label
+        seq_len = torch.tensor(seq_len, dtype=torch.long)
+        return batch_token, batch_label ,seq_len
 
 if __name__ == '__main__':
     # data_path = 'train_annal.json'
@@ -165,9 +169,9 @@ if __name__ == '__main__':
     #
     dataset = MyDataset("output_data/vocab.pkl" , "train_annal.json" , "output_data/label_vocab.pkl")
     max = 0
-    for q,w,e,r,t,y in dataset:
-        max = len(e) if len(e) > max else max
-    print(f'最大句子长度：{max}')
+    # for q,w,e,r,t,y in dataset:
+    #     max = len(e) if len(e) > max else max
+    # print(f'最大句子长度：{max}')
 
     train_dataloader = DataLoader(dataset, batch_size=4, shuffle=True , collate_fn=dataset.collate_fn )
     for batch in train_dataloader:
