@@ -8,7 +8,52 @@ from unicodedata import bidirectional
 import torch
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 import numpy ,scipy ,pandas ,matplotlib
+#为了方便模型进行调试，建立一个模型的基类，总共三层，token_embedding_layer，feteach_feature_layer，classify_predict_layer
+class ModelTextClassify(nn.Module):
+    def __init__(self,
+                 token_embedding_layer,
+                 feteach_feature_layer,
+                 classify_predict_layer
+                 ):
+        super(ModelTextClassify, self).__init__()
+        #传入common.py中定义的三个层
+        self.token_embedding_layer = token_embedding_layer
+        self.feteach_feature_layer = feteach_feature_layer
+        self.classify_predict_layer = classify_predict_layer
+        pass
 
+
+    def forward(self,x , y , vocab_size,seq_len,
+                embed_size=64 , batch_first = True,
+                hidden_size=64,
+                num_layers=1,
+                dropout=0.1,
+                bidirectional=True,
+                output_type='all_mean',  # "all_sum" "all_mean" "last"
+                num_classes=20
+                ):
+        """
+        前向传播
+        :param x: 输入的文本，形状是[N,M] N表示batch_size , M表示句子长度
+        :param y: 分类的结果
+        :param seq_len: 类别标签
+        :return: output : 分类的结果
+        """
+        #1.通过embedding层将x转换成词向量
+        x = self.token_embedding_layer(x , seq_len , vocab_size, embed_size,batch_first)()
+        #2.通过特征提取层提取文本的特征
+        x = self.feteach_feature_layer = self.feteach_feature_layer(
+                 embed_size = embed_size,
+                 hidden_size = hidden_size,
+                 num_layers = num_layers,
+                 batch_first = batch_first,
+                 dropout = dropout,
+                 bidirectional = bidirectional,
+                 rnn_output_type = output_type,# "all_sum" "all_mean" "last"
+                 num_classes = num_classes)(x , y , seq_len )
+        #3.通过分类预测层得到最终的分类结果
+        output = self.classify_predict_layer(hidden_size ,bidirectional, dropout,num_classes)(x)
+        return output
 
 class RNNTextClassifyModel(nn.Module):
     def __init__(self,vocab_size,
@@ -204,11 +249,13 @@ class GRUTextClassifyModel(nn.Module):
         return output
 
 if __name__ == '__main__':
+    from common import CreatTokenEmbeddingLayer , RNNTextClassifyModel , LSTMTextClassifyModel , GRUTextClassifyModel,ClassifyPredictLayer
     vocab = torch.load('data/output_data/vocab.pkl')
     label_vocab = torch.load('data/output_data/label_vocab.pkl')
-    model = GRUTextClassifyModel(
-        vocab_size=len(vocab),
-        num_classes=len(label_vocab),)
+    model = ModelTextClassify(
+        CreatTokenEmbeddingLayer,
+        RNNTextClassifyModel,
+        ClassifyPredictLayer)
     x = torch.tensor([[ 35,   1,   1,   1, 419,   0,   0,   0,   0,   0,   0,   0,   0,   0,
            0,   0],
         [  1,  42,  89,  44,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
@@ -219,5 +266,6 @@ if __name__ == '__main__':
            0,   0]])
     y = torch.tensor([20,  4, 20, 14])
     seq_len = torch.tensor([5,4,6,3])
-    out = model(x,y , seq_len)
+    out = model(x,y , seq_len = seq_len ,vocab_size = len(vocab),embed_size =64,num_classes = len(label_vocab))
     print(out)
+    print(out.shape)
