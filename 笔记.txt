@@ -23,3 +23,27 @@
             -c2a. 分词
             -c2b. 转索引
             -c2c. padding
+     -d 构建dataset
+        -d1. 构建Dataset类
+
+        -d2. 构建DataLoader类
+    2.模型构建
+        -a.模型选择
+            -a1. RNN
+            -a2. LSTM
+            -a3. GRU
+            +fc 全连接
+        -b 模型调整
+            -b1. 双向
+            -b2. 多层
+            -b3.采用packed sequence
+            -b4. 为了方便调试每一层的内容，在common里面写好每一层的类，然后在model里面组装
+    3.模型训练
+        -a. 训练代码编写
+            -a1. 训练函数
+            -a2. 验证函数
+            -a3. 测试函数
+        -b. 训练技巧
+            -b1. 学习率调整
+            -b2. 提前停止
+            -b3. 模型保存与加载
