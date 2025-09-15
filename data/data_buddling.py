@@ -13,7 +13,7 @@ from pandas.core.dtypes.inference import is_number
 from torch.utils.data import DataLoader , Dataset
 from utils_project import create_dir  , read_file
 
-jieba.load_userdict("jieba_dict.txt")
+# jieba.load_userdict("jieba_dict.txt")
 #分词
 def split_sentence(sentence):
     return jieba.lcut(sentence)
@@ -112,10 +112,10 @@ def read_data(file_path):
 
 #构造数据集
 class MyDataset(Dataset):
-    def __init__(self, vocab_file, data_file,label_file):
+    def __init__(self, vocab, data_file,label):
         super(MyDataset, self).__init__()
-        self.token_vocab = torch.load(vocab_file, map_location=torch.device('cpu'))
-        self.label_vocab = torch.load(label_file, map_location=torch.device('cpu'))
+        self.token_vocab = vocab
+        self.label_vocab = label
         self.records = []
         for line in read_file(data_file):
             tokens , label = line["text"] , line["domain"]
@@ -150,6 +150,15 @@ class MyDataset(Dataset):
         seq_len = torch.tensor(seq_len, dtype=torch.long)
         return batch_token, batch_label ,seq_len
 
+def train_eval_split(dataset, train_ratio=0.8,batch_size =4,shuffle=True, collate_fn= None):
+    train_size = int(train_ratio * len(dataset))
+    eval_size = len(dataset) - train_size
+    train_dataset, eval_dataset = torch.utils.data.random_split(dataset, [train_size, eval_size])
+    train_dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn)
+    eval_dataloader = DataLoader(eval_dataset, batch_size=batch_size, shuffle=False, collate_fn=collate_fn)
+    return train_dataloader, eval_dataloader
+
+
 if __name__ == '__main__':
     # data_path = 'train_annal.json'
     # domain, intent = read_data(data_path)
@@ -167,8 +176,12 @@ if __name__ == '__main__':
     #                     , nuk_token="<NUK>", num_token='<NUM>' , punct_token = "<PUN>")
     # print(f'词表大小：{len(vocab)}')
     #
-    dataset = MyDataset("output_data/vocab.pkl" , "train_annal.json" , "output_data/label_vocab.pkl")
-    max = 0
+    vocab_file = "output_data/vocab.pkl"
+    label_vocab_file = "output_data/label_vocab.pkl"
+    vocab = torch.load(vocab_file, map_location="cpu")
+    label_vocab = torch.load(label_vocab_file, map_location="cpu")
+    dataset = MyDataset(vocab , "train_annal.json" , label_vocab)
+    # max = 0
     # for q,w,e,r,t,y in dataset:
     #     max = len(e) if len(e) > max else max
     # print(f'最大句子长度：{max}')
