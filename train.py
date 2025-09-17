@@ -36,14 +36,14 @@ def train_model():
     }
     trainer.train(
         cfg = cfg,
-        all_epoch = 2000,
+        all_epoch = 200,
         train_ratio =0.9,
         batch_size = 512,
         shuffle = True,
         lr=0.001,
-        save_model_epoch=10,
+        save_model_epoch=100,
         log_interval_batch=1,
-        ckpt_path="D:\github\Dialogue_Intent_Recognition\data\output_data\\train\model\model_epoch_1000.pkl"
+        ckpt_path="D:\github\Dialogue_Intent_Recognition\data\output_data\\train\model\model_epoch_5002.pkl"
     )
 if __name__ == '__main__':
     train_model()
